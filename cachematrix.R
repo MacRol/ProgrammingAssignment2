@@ -3,6 +3,23 @@
 # to perform matrix inversion once and pull result from cache at later
 # opportunities to reuse the cached result in a specially created object.
 #
+# Example of Intended Usage:
+# --------------------------
+#
+# # Create some matrix (here a 4x4 random matrix from std normal...).
+# # Can also create matrix directly as argument to `makeCacheMatrix()`
+#
+# random_matrix <- matrix (rnorm(16), 4, 4)
+#
+# # Store in clever_object output of the `makeCacheMatrix()` call on matrix
+#
+# clever_object <- makeCacheMatrix(random_matrix)
+#
+# # First call to solveCache(clever_object) incurs inverse calc.
+# # whereas subsequent calls to solveCache() retrieve from cache.
+#
+# solveCache(clever_object)
+#
 #
 # `makeCacheMatrix()` function definition:
 # Takes a matrix as argument (coerces input to matrix)
@@ -12,18 +29,23 @@
 makeCacheMatrix <- function (m=matrix()) {
   # Initialise inverse field to NULL
   inv <<- NULL
+  #
   # Build a set_mat() function in case we want to overwrite m
   # Make sure inverse is reset to NULL after new matrix m set
+  #
   set_mat <- function(mm) {
     m <<- mm
     inv <<- NULL
   }
   # Build `get_mat()` to get the matrix
   get_mat <- function() m
+  #
   # Build `set_inv()` to set the inverse
   set_inv <- function(i) inv <<- i
+  #
   # Build `get_inv()` to get the inverse
   get_inv <- function() inv
+  #
   # Return a list with the 4 functions
   list(set_mat=set_mat, get_mat=get_mat, set_inv=set_inv, get_inv=get_inv)
 }
@@ -45,7 +67,9 @@ cacheSolve <- function(mat_inv, ...) {
   # Argument above is an object of functions on matrix/inverse
   # Now access the inverse field from the clever object:
   inv <- mat_inv$get_inv()
+  #
   # If it isn't null, then get a free ride and return it!
+  #
   if (!is.null(inv)) {
     message("Getting inverse matrix from cache")
     return (inv)
@@ -53,10 +77,13 @@ cacheSolve <- function(mat_inv, ...) {
   # So the inverse field is NULL, must calculate inverse.
   # First get the matrix of origin itself from the object
   mat <- mat_inv$get_mat()
+  #
   # No free lunch this time: compute the inverse
   inv <- solve(mat, ...)
+  #
   # Push the result back into the cache object for future needs
   mat_inv$set_inv(inv)
+  #
   # And evaluate the inverse so that's what's returned
   inv
 }
